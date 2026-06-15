@@ -1,6 +1,6 @@
 import os
 
-os.environ["DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 os.environ["ENABLE_KAFKA_CONSUMER"] = "false"
 
 import pytest
@@ -9,15 +9,21 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import get_settings
 from app.db.database import Base, get_db
 from app.main import app
 
 
-engine = create_engine(
-    "sqlite+pysqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+test_database_url = os.environ["DATABASE_URL"]
+engine_kwargs = {}
+if test_database_url.startswith("sqlite"):
+    engine_kwargs = {
+        "connect_args": {"check_same_thread": False},
+        "poolclass": StaticPool,
+    }
+
+get_settings.cache_clear()
+engine = create_engine(test_database_url, **engine_kwargs)
 TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 

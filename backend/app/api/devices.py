@@ -9,7 +9,12 @@ from app.schemas.device import DeviceDetail, DeviceRead, DeviceWithLatestMetric
 router = APIRouter(prefix="/api/devices", tags=["devices"])
 
 
-@router.get("", response_model=list[DeviceWithLatestMetric])
+@router.get(
+    "",
+    response_model=list[DeviceWithLatestMetric],
+    summary="List monitored devices",
+    description="Returns every monitored device with its latest metric sample for table and status-card views.",
+)
 def list_devices(db: Session = Depends(get_db)) -> list[DeviceWithLatestMetric]:
     devices = db.scalars(select(Device).order_by(Device.hostname)).all()
     response: list[DeviceWithLatestMetric] = []
@@ -21,7 +26,12 @@ def list_devices(db: Session = Depends(get_db)) -> list[DeviceWithLatestMetric]:
     return response
 
 
-@router.get("/{device_id}", response_model=DeviceDetail)
+@router.get(
+    "/{device_id}",
+    response_model=DeviceDetail,
+    summary="Get device detail",
+    description="Returns inventory metadata, recent metrics, recent alerts, and recent logs for a single device hostname.",
+)
 def get_device(device_id: str, db: Session = Depends(get_db)) -> DeviceDetail:
     device = db.scalar(select(Device).where(Device.hostname == device_id))
     if not device:

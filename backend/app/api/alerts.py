@@ -11,7 +11,12 @@ from app.schemas.alert import AlertRead, AlertRuleCreate, AlertRuleRead
 router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
 
-@router.get("", response_model=list[AlertRead])
+@router.get(
+    "",
+    response_model=list[AlertRead],
+    summary="List alerts",
+    description="Returns alerts sorted newest first, with optional severity and status filters.",
+)
 def list_alerts(
     severity: str | None = None,
     status: str | None = Query(default=None),
@@ -25,7 +30,13 @@ def list_alerts(
     return db.scalars(query.order_by(desc(Alert.created_at)).limit(200)).all()
 
 
-@router.post("/rules", response_model=AlertRuleRead, status_code=201)
+@router.post(
+    "/rules",
+    response_model=AlertRuleRead,
+    status_code=201,
+    summary="Create alert rule",
+    description="Creates a threshold-based alert rule evaluated against incoming telemetry.",
+)
 def create_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)) -> AlertRule:
     db_rule = AlertRule(**rule.model_dump())
     db.add(db_rule)
@@ -34,7 +45,12 @@ def create_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)) -> AlertRu
     return db_rule
 
 
-@router.patch("/{alert_id}/resolve", response_model=AlertRead)
+@router.patch(
+    "/{alert_id}/resolve",
+    response_model=AlertRead,
+    summary="Resolve alert",
+    description="Marks an active alert as resolved and records its resolution timestamp.",
+)
 def resolve_alert(alert_id: int, db: Session = Depends(get_db)) -> Alert:
     alert = db.get(Alert, alert_id)
     if not alert:

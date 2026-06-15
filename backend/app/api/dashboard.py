@@ -9,7 +9,12 @@ from app.schemas.dashboard import DashboardSummary
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
-@router.get("/summary", response_model=DashboardSummary)
+@router.get(
+    "/summary",
+    response_model=DashboardSummary,
+    summary="Get dashboard summary",
+    description="Returns aggregate counts and averages used by the InfraPulse overview dashboard.",
+)
 def summary(db: Session = Depends(get_db)) -> DashboardSummary:
     total_devices = db.scalar(select(func.count(Device.id))) or 0
     status_counts = dict(db.execute(select(Device.status, func.count(Device.id)).group_by(Device.status)).all())

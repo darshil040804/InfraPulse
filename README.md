@@ -1,5 +1,7 @@
 # InfraPulse
 
+[![CI](https://github.com/darshil040804/InfraPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/darshil040804/InfraPulse/actions/workflows/ci.yml)
+
 InfraPulse is a portfolio-ready infrastructure observability dashboard. It simulates device and service telemetry, streams events through a Kafka-compatible broker, stores metrics in PostgreSQL, evaluates alert rules with FastAPI, and presents infrastructure health in a React dashboard.
 
 ## What It Demonstrates
@@ -68,6 +70,18 @@ docker compose logs -f backend
 docker compose logs -f telemetry-generator
 docker compose exec backend pytest
 ```
+
+## Portfolio Screenshots
+
+Recommended screenshots for the README and portfolio writeup:
+
+- React overview dashboard with live device and alert cards.
+- Devices table showing hostnames, types, status, CPU, memory, and last seen.
+- Device detail page with CPU, memory, latency, and packet loss charts.
+- Alerts page with active warning or critical alerts.
+- Logs page showing structured backend or telemetry events.
+- FastAPI Swagger docs at `http://localhost:8000/docs`, with `GET /api/dashboard/summary` expanded and a successful JSON response visible.
+- Terminal output from `docker compose ps` showing backend, frontend, postgres, broker, and telemetry services running.
 
 ## GitHub Setup
 

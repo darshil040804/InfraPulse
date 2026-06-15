@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: public.ecr.aws/docker/library/postgres:16-alpine
+        env:
+          POSTGRES_USER: infrapulse
+          POSTGRES_PASSWORD: infrapulse_password
+          POSTGRES_DB: infrapulse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U infrapulse -d infrapulse"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://infrapulse:infrapulse_password@localhost:5432/infrapulse
+      ENABLE_KAFKA_CONSUMER: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: backend
+        run: pytest
+
+  frontend:
+    name: Frontend build and audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=moderate
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  compose:
+    name: Docker Compose config
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Compose file
+        run: docker compose config --quiet

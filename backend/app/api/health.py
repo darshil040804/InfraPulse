@@ -10,7 +10,12 @@ from app.schemas.common import HealthResponse
 router = APIRouter(tags=["health"])
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get(
+    "/health",
+    response_model=HealthResponse,
+    summary="Check API and database health",
+    description="Runs a lightweight database query and returns the current API health status.",
+)
 def health(db: Session = Depends(get_db)) -> HealthResponse:
     db.execute(text("select 1"))
     return HealthResponse(

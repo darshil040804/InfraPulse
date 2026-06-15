@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   backend:
     name: Backend tests
@@ -28,6 +31,7 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://infrapulse:infrapulse_password@localhost:5432/infrapulse
       ENABLE_KAFKA_CONSUMER: "false"
+      PYTHONPATH: ${{ github.workspace }}/backend
 
     steps:
       - name: Check out repository
@@ -44,9 +48,20 @@ jobs:
         working-directory: backend
         run: pip install -r requirements.txt
 
+      - name: Show backend environment
+        working-directory: backend
+        run: |
+          python --version
+          python -m pytest --version
+          python - <<'PY'
+          import sys
+          print("pythonpath:")
+          print("\n".join(sys.path))
+          PY
+
       - name: Run backend tests
         working-directory: backend
-        run: pytest
+        run: python -m pytest -vv
 
   frontend:
     name: Frontend build and audit

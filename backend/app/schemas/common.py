@@ -1,0 +1,14 @@
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
+
+
+class OrmModel(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+
+class HealthResponse(BaseModel):
+    status: str
+    database: str
+    service: str
+    timestamp: datetime

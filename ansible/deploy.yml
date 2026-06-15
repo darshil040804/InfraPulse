@@ -1,0 +1,16 @@
+---
+- name: Deploy InfraPulse locally
+  hosts: infrapulse
+  gather_facts: false
+  tasks:
+    - name: Show deployment target
+      ansible.builtin.debug:
+        msg: "Run docker compose up --build from the InfraPulse repository root."
+
+    - name: Validate Docker is available
+      ansible.builtin.command: docker --version
+      changed_when: false
+
+    - name: Validate Docker Compose is available
+      ansible.builtin.command: docker compose version
+      changed_when: false

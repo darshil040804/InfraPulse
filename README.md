@@ -14,6 +14,7 @@ InfraPulse is a local infrastructure observability platform built with React, Fa
 - Alert rule evaluation for CPU, memory, latency, packet loss, and disk usage
 - React, TypeScript, Tailwind CSS, and Recharts operations dashboard
 - Docker Compose local platform with repeatable demo reset scripts
+- Optional ELK layer for centralized log search with Elasticsearch, Logstash, and Kibana
 - GitHub Actions checks for backend tests, frontend build, npm audit, and Compose config
 - Ansible playbook for local deployment validation and stack startup
 
@@ -25,6 +26,7 @@ InfraPulse is a local infrastructure observability platform built with React, Fa
 | Backend | FastAPI, SQLAlchemy, Pydantic, Pytest |
 | Data | PostgreSQL |
 | Streaming | Redpanda as a Kafka-compatible broker |
+| Logs | Optional Elasticsearch, Logstash, Kibana |
 | Automation | Docker Compose, PowerShell scripts, Ansible |
 | CI | GitHub Actions |
 
@@ -162,6 +164,45 @@ docker compose up -d
 docker compose exec backend python -m app.scripts.reset_demo
 docker compose run --rm -e DATABASE_URL=sqlite+pysqlite:///:memory: -e ENABLE_KAFKA_CONSUMER=false backend python -m pytest -vv
 docker compose down
+```
+
+## Optional ELK Stack
+
+InfraPulse can run an optional ELK logging layer for local log search and visualization.
+
+```powershell
+.\scripts\start-elk.ps1
+```
+
+This starts Elasticsearch, Logstash, and Kibana using the `elk` Docker Compose profile.
+
+Open:
+
+| Service | URL |
+| --- | --- |
+| Kibana | http://localhost:5601 |
+| Elasticsearch | http://localhost:9200 |
+
+Logstash consumes JSON events from the Kafka-compatible `application-logs` topic and writes them to Elasticsearch indexes named `infrapulse-logs-YYYY.MM.DD`.
+
+If the telemetry generator is stopped from demo reset mode, restart it so fresh logs are produced:
+
+```powershell
+docker compose up -d telemetry-generator
+```
+
+In Kibana, create a data view for:
+
+```text
+infrapulse-logs-*
+```
+
+Use `@timestamp` as the time field. More details are in [docs/elk.md](docs/elk.md).
+
+To stop only the ELK services:
+
+```powershell
+.\scripts\stop-elk.ps1
 ```
 
 ## API Endpoints

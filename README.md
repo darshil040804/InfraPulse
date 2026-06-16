@@ -259,10 +259,4 @@ docker-compose.yml    Local platform orchestration
 ```
 
 ## Portfolio Notes
-
-Additional presentation guidance is available in:
-
-- [docs/demo-guide.md](docs/demo-guide.md)
-- [docs/portfolio-checklist.md](docs/portfolio-checklist.md)
-
 InfraPulse is designed as a local portfolio project. A public deployment can later host only the React frontend, FastAPI backend, and managed PostgreSQL while keeping Kafka/Redpanda and extended logging as local demo features.

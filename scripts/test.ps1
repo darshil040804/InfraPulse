@@ -2,7 +2,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 docker compose run --rm `
-  -e DATABASE_URL=postgresql+psycopg://infrapulse:infrapulse_password@postgres:5432/infrapulse `
+  -e DATABASE_URL=sqlite+pysqlite:///:memory: `
   -e ENABLE_KAFKA_CONSUMER=false `
   backend python -m pytest -vv
 

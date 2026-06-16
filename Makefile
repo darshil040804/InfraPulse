@@ -7,7 +7,7 @@ down:
 	docker compose down
 
 test:
-	docker compose run --rm -e DATABASE_URL=postgresql+psycopg://infrapulse:infrapulse_password@postgres:5432/infrapulse -e ENABLE_KAFKA_CONSUMER=false backend python -m pytest -vv
+	docker compose run --rm -e DATABASE_URL=sqlite+pysqlite:///:memory: -e ENABLE_KAFKA_CONSUMER=false backend python -m pytest -vv
 	cd frontend && npm audit --audit-level=moderate && npm run build
 	docker compose config --quiet
 

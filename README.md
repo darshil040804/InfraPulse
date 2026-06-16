@@ -61,14 +61,30 @@ After the stack is running:
 
 The telemetry generator will start publishing events after the broker is healthy. The backend consumer stores metrics and creates alerts automatically.
 
+## Demo Reset
+
+Use the reset script before taking screenshots or recording a demo. It loads deterministic devices, metrics, alerts, and logs, then stops the telemetry generator so the UI stays stable.
+
+```powershell
+.\scripts\start.ps1
+.\scripts\reset-demo.ps1
+```
+
+To resume live simulated telemetry after screenshots:
+
+```powershell
+docker compose up -d telemetry-generator
+```
+
 ## Useful Commands
 
 ```powershell
-docker compose up --build
-docker compose down
+.\scripts\start.ps1
+.\scripts\reset-demo.ps1
+.\scripts\test.ps1
+.\scripts\stop.ps1
 docker compose logs -f backend
 docker compose logs -f telemetry-generator
-docker compose exec backend pytest
 ```
 
 ## Portfolio Screenshots
@@ -82,6 +98,16 @@ Recommended screenshots for the README and portfolio writeup:
 - Logs page showing structured backend or telemetry events.
 - FastAPI Swagger docs at `http://localhost:8000/docs`, with `GET /api/dashboard/summary` expanded and a successful JSON response visible.
 - Terminal output from `docker compose ps` showing backend, frontend, postgres, broker, and telemetry services running.
+
+Save final screenshots under `docs/screenshots/`. The detailed checklist is in [docs/portfolio-checklist.md](docs/portfolio-checklist.md).
+
+## Ansible Automation
+
+The Ansible playbook validates the local host, starts the Docker Compose stack, waits for the API health check, and prints operator commands.
+
+```powershell
+ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+```
 
 ## GitHub Setup
 

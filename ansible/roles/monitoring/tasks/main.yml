@@ -1,0 +1,20 @@
+---
+- name: Show Compose service status
+  ansible.builtin.command: docker compose ps
+  args:
+    chdir: "{{ infrapulse_project_dir }}"
+  register: compose_ps
+  changed_when: false
+
+- name: Print running service table
+  ansible.builtin.debug:
+    var: compose_ps.stdout_lines
+
+- name: Print useful operator commands
+  ansible.builtin.debug:
+    msg:
+      - "Dashboard: http://localhost:3000"
+      - "API docs: http://localhost:8000/docs"
+      - "Health: {{ infrapulse_health_url }}"
+      - "Backend logs: docker compose logs -f backend"
+      - "Telemetry logs: docker compose logs -f telemetry-generator"

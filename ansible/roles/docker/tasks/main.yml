@@ -1,0 +1,12 @@
+---
+- name: Validate Docker CLI is available
+  ansible.builtin.command: docker --version
+  changed_when: false
+
+- name: Validate Docker Compose plugin is available
+  ansible.builtin.command: docker compose version
+  changed_when: false
+
+- name: Validate Docker daemon is reachable
+  ansible.builtin.command: docker info
+  changed_when: false

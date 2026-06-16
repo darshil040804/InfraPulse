@@ -1,0 +1,9 @@
+---
+infrapulse_project_dir: "{{ playbook_dir }}/.."
+infrapulse_health_url: "http://localhost:8000/health"
+infrapulse_required_services:
+  - frontend
+  - backend
+  - postgres
+  - kafka
+  - telemetry-generator

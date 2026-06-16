@@ -1,5 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { ApiUnavailable } from "../components/ApiUnavailable";
+import { RefreshButton } from "../components/RefreshButton";
 import { StateBlock } from "../components/StateBlock";
 import { StatusBadge } from "../components/StatusBadge";
 import { getAlerts, resolveAlert } from "../services/api";
@@ -11,10 +13,17 @@ export function Alerts() {
   const [severity, setSeverity] = useState("");
   const [status, setStatus] = useState("active");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   async function load() {
-    setAlerts(await getAlerts({ severity: severity || undefined, status: status || undefined }));
-    setLoading(false);
+    setError("");
+    try {
+      setAlerts(await getAlerts({ severity: severity || undefined, status: status || undefined }));
+    } catch {
+      setError("Backend API is not reachable yet.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -24,6 +33,7 @@ export function Alerts() {
   const activeCount = useMemo(() => alerts.filter((alert) => alert.status === "active").length, [alerts]);
 
   if (loading) return <StateBlock title="Loading alerts" message="Reading alert state from the backend." />;
+  if (error) return <ApiUnavailable onRetry={load} />;
 
   return (
     <div className="space-y-5">
@@ -33,6 +43,7 @@ export function Alerts() {
           <p className="mt-1 text-sm text-slate-500">{activeCount} active alerts in the current filter.</p>
         </div>
         <div className="flex gap-2">
+          <RefreshButton onClick={load} loading={loading} />
           <select className="rounded border border-line bg-white px-3 py-2 text-sm" value={severity} onChange={(event) => setSeverity(event.target.value)}>
             <option value="">All severity</option>
             <option value="warning">Warning</option>
@@ -76,8 +87,12 @@ export function Alerts() {
                       className="inline-flex items-center gap-2 rounded border border-line px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={alert.status === "resolved"}
                       onClick={async () => {
-                        await resolveAlert(alert.id);
-                        await load();
+                        try {
+                          await resolveAlert(alert.id);
+                          await load();
+                        } catch {
+                          setError("Backend API is not reachable yet.");
+                        }
                       }}
                     >
                       <CheckCircle2 size={16} aria-hidden />

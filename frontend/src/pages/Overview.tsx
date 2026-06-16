@@ -1,8 +1,11 @@
 import { AlertTriangle, Cpu, Database, HardDrive, Network, Server } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ApiUnavailable } from "../components/ApiUnavailable";
 import { MetricLineChart } from "../components/MetricLineChart";
 import { MetricCard } from "../components/MetricCard";
+import { PageHeader } from "../components/PageHeader";
+import { RefreshButton } from "../components/RefreshButton";
 import { StateBlock } from "../components/StateBlock";
 import { StatusBadge } from "../components/StatusBadge";
 import { getDevices, getRecentMetrics, getSummary } from "../services/api";
@@ -16,33 +19,36 @@ export function Overview() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [summaryData, deviceData, metricData] = await Promise.all([getSummary(), getDevices(), getRecentMetrics()]);
-        setSummary(summaryData);
-        setDevices(deviceData);
-        setMetrics(metricData);
-      } catch {
-        setError("Backend API is not reachable yet.");
-      } finally {
-        setLoading(false);
-      }
+  async function load() {
+    setError("");
+    try {
+      const [summaryData, deviceData, metricData] = await Promise.all([getSummary(), getDevices(), getRecentMetrics()]);
+      setSummary(summaryData);
+      setDevices(deviceData);
+      setMetrics(metricData);
+    } catch {
+      setError("Backend API is not reachable yet.");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     load();
     const timer = window.setInterval(load, 5000);
     return () => window.clearInterval(timer);
   }, []);
 
   if (loading) return <StateBlock title="Loading dashboard" message="Waiting for InfraPulse API data." />;
-  if (error) return <StateBlock title="API unavailable" message={error} />;
+  if (error) return <ApiUnavailable onRetry={load} />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-ink">Infrastructure Overview</h1>
-        <p className="mt-1 text-sm text-slate-500">Live telemetry from simulated network devices, services, and Linux hosts.</p>
-      </div>
+      <PageHeader
+        title="Infrastructure Overview"
+        description="Live telemetry from simulated network devices, services, and Linux hosts."
+        actions={<RefreshButton onClick={load} loading={loading} />}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Devices" value={summary?.total_devices ?? 0} detail={`${summary?.healthy_devices ?? 0} healthy`} icon={Server} />
@@ -58,10 +64,14 @@ export function Overview() {
         <MetricCard label="Last Event" value={shortDate(summary?.last_event_received)} icon={Database} />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <MetricLineChart metrics={metrics} dataKey="cpu_usage" color="#2563eb" label="Recent CPU Usage" />
-        <MetricLineChart metrics={metrics} dataKey="latency_ms" color="#0f766e" label="Recent Latency" />
-      </div>
+      {metrics.length ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <MetricLineChart metrics={metrics} dataKey="cpu_usage" color="#2563eb" label="Recent CPU Usage" />
+          <MetricLineChart metrics={metrics} dataKey="latency_ms" color="#0f766e" label="Recent Latency" />
+        </div>
+      ) : (
+        <StateBlock title="No metrics yet" message="Telemetry is starting. Refresh in a few seconds or run the demo reset script." />
+      )}
 
       <section className="rounded border border-line bg-white">
         <div className="border-b border-line px-4 py-3">
@@ -99,6 +109,7 @@ export function Overview() {
             </tbody>
           </table>
         </div>
+        {!devices.length ? <p className="px-4 py-5 text-sm text-slate-500">No devices are available yet.</p> : null}
       </section>
     </div>
   );
